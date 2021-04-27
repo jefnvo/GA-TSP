@@ -1,7 +1,5 @@
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Random;
 
 import static java.lang.Math.pow;
@@ -39,89 +37,108 @@ public class TSPSolver {
 
                 ArrayList<Double> firstParent = randomPop.get(indexFirstParent);
                 ArrayList<Double> secondParent = randomPop.get(indexSecondParent);
+//                ArrayList<Double> firstParent = new ArrayList<>(Arrays.asList(0.0, 5.0, 4.0, 3.0, 6.0, 1.0, 2.0));
+//                ArrayList<Double> secondParent = new ArrayList<>(Arrays.asList(2.0, 5.0, 6.0, 4.0, 0.0, 3.0, 1.0));
                 int randomNumber = rand.nextInt();
                 if (randomNumber <= probCrossover) {
                     ArrayList<ArrayList<Double>> offsprings = cx2Operator(firstParent, secondParent);
                     //replace
-                    randomPop.set(indexFirstParent, offsprings.get(0));
-                    randomPop.set(indexSecondParent, offsprings.get(1));
-                    //update fitness
-                    fitnessPopulation.set(indexFirstParent, calcFitnessTour(offsprings.get(0), numCities, distanceMatrix));
-                    fitnessPopulation.set(indexSecondParent, calcFitnessTour(offsprings.get(1), numCities, distanceMatrix));
+                    double fitnessFirstOffspring = calcFitnessTour(offsprings.get(0), numCities, distanceMatrix);
+                    double fitnessSecondOffspring = calcFitnessTour(offsprings.get(1), numCities, distanceMatrix);
+                    if(fitnessFirstOffspring < fitnessPopulation.get(indexFirstParent)) {
+                        randomPop.set(indexFirstParent, offsprings.get(0));
+                        fitnessPopulation.set(indexFirstParent, calcFitnessTour(offsprings.get(0), numCities, distanceMatrix));
+                    }
+                    if(fitnessSecondOffspring < fitnessPopulation.get(indexSecondParent)) {
+                        randomPop.set(indexSecondParent, offsprings.get(1));
+                        fitnessPopulation.set(indexSecondParent, calcFitnessTour(offsprings.get(1), numCities, distanceMatrix));
+                    }
                 }
             }
             bestFitness.add(getBestIndex(fitnessPopulation));
-            System.out.print("The max fitness in this generation is="+Collections.max(fitnessPopulation));
+            System.out.print("The max fitness in this generation is="+Collections.max(fitnessPopulation)+"\n");
         }
-        System.out.print("The best fitness is="+Collections.max(bestFitness));
+        System.out.print("The best fitness is="+Collections.max(bestFitness)+"\n");
 
         return randomPop.get(Collections.max(bestFitness));
     }
 
     private ArrayList<ArrayList<Double>> cx2Operator(ArrayList<Double> firstParent, ArrayList<Double> secondParent) {
-        ArrayList<Double> firstOffspring = new ArrayList<Double>(Collections.nCopies(firstParent.size(), null));
-        ArrayList<Double> secondOffspring =new ArrayList<Double>(Collections.nCopies(secondParent.size(), null));;
+        System.out.println("First parent ->"+ firstParent);
+        System.out.println("Second parent ->"+ secondParent);
 
-        int i1 = 0;
-        int i2 = 0;
+        ArrayList<Double> firstOffspring = new ArrayList<>();
+        ArrayList<Double> secondOffspring = new ArrayList<>();
 
-        double initialCity = firstParent.get(0);
-        firstOffspring.set(i1, secondParent.get(i1));
-        i1++;
-        boolean check = true;
-
-        while (i1 < firstParent.size() && i2 < secondParent.size()) {
-            int index1 = getCityIndex(firstParent, firstOffspring.get(i1 - 1));
-            index1 = getCityIndex(firstParent, secondParent.get(index1));
-            double latestUpdated2 = secondParent.get(index1);
-            System.out.println("First parent ->"+ Arrays.toString(firstParent.toArray()));
-            System.out.println("Second parent ->"+ Arrays.toString(secondParent.toArray()));
-            System.out.println("\n\n");
-            if (latestUpdated2 == initialCity) {
-                secondOffspring.set(i2, latestUpdated2);
-                i2++;
-                check = false;
-                System.out.println("First child ->"+ Arrays.toString(firstOffspring.toArray()));
-                System.out.println("Second child ->"+ Arrays.toString(secondOffspring.toArray()));
-
-                ArrayList<Double> remainingCities1 = getUnusedIndex(firstParent, secondOffspring);
-                ArrayList<Double> remainingCities2 = getUnusedIndex(secondParent, firstOffspring);
-                System.out.println("Remaining from parent 1 and child 2->"+ Arrays.toString(remainingCities1.toArray()));
-                System.out.println("Remaining from parent 2 and child 1->"+ Arrays.toString(remainingCities2.toArray()));
-
-                ArrayList<ArrayList<Double>> remaining = cx2Operator(remainingCities1, remainingCities2);
-
-                for(int i = i1, j=0; i < remaining.get(0).size() && j < remaining.get(0).size(); i++, j++) {
-                    firstOffspring.set(i, remaining.get(0).get(j));
+        while(firstOffspring.size() != numCities && secondOffspring.size()!= numCities) {
+            cx2OperatorCycle(firstParent, firstOffspring, secondParent, secondOffspring);
+            final Boolean[] childDiverge = {false};
+            firstOffspring.forEach(it -> {
+                if(!secondOffspring.contains(it)) {
+                    childDiverge[0] = true;
                 }
-                for(int i = i1, j=0; i < remaining.get(1).size() && j < remaining.get(1).size(); i++, j++) {
-                    secondOffspring.set(i, remaining.get(1).get(j));
-                }
+            });
 
-                check = false;
-                break;
-            } else {
-                secondOffspring.set(i2, secondParent.get(index1));
-                i2++;
-                index1 = getCityIndex(firstParent, secondOffspring.get(i2 - 1));
-                firstOffspring.set(i1, secondParent.get(index1));
-                i1++;
+            if(firstOffspring.size()  < numCities || secondOffspring.size() < numCities) {
+                ArrayList<Double> newFirstParent = new ArrayList<>();
+                ArrayList<Double> newSecondParent = new ArrayList<>();
+                firstParent.forEach( it -> {
+                    if(!firstOffspring.contains(it)) {
+                        newFirstParent.add(it);
+                    }
+                });
+
+                secondParent.forEach( it -> {
+                    if(!secondOffspring.contains(it)) {
+                        newSecondParent.add(it);
+                    }
+                });
+
+                firstParent = newFirstParent;
+                secondParent = newSecondParent;
+
+                if(firstParent.size() == 3 || secondParent.size() == 3) {
+                    firstOffspring.addAll(firstParent);
+                    secondOffspring.addAll(secondParent);
+                } else if(childDiverge[0]) {
+                    firstOffspring.addAll(firstParent);
+                    secondOffspring.addAll(secondParent);
+                }
             }
         }
-        if (check) {
-            int index1 = getCityIndex(firstParent, firstOffspring.get(i1 - 1));
-            index1 = getCityIndex(firstParent, secondParent.get(index1));
-            Double latestUpdated2 = secondParent.get(index1);
-            secondOffspring.set(i2, latestUpdated2);
-            i2++;
-        }
-        ArrayList<ArrayList<Double>> resultArray = new ArrayList<>(2);
-        resultArray.add(firstOffspring);
-        resultArray.add(secondOffspring);
-        return resultArray;
-
+        System.out.println("First Offspring = "+ firstOffspring  +"\nSecond Offspring = "+ secondOffspring);
+        ArrayList<ArrayList<Double>> result = new ArrayList<>();
+        result.add(firstOffspring);
+        result.add(secondOffspring);
+        return result;
     }
 
+    private void cx2OperatorCycle(ArrayList<Double> firstParent, ArrayList<Double> firstOffspring,
+                                              ArrayList<Double> secondParent, ArrayList<Double> secondOffspring) {
+        //step 2
+        Double bit = secondParent.get(0);
+        firstOffspring.add(bit);
+        do {
+            //step 3
+            int indexBit = getCityIndex(firstParent, bit);
+            bit = secondParent.get(indexBit);
+            indexBit = getCityIndex(firstParent, bit);
+            bit = secondParent.get(indexBit);
+            if(!secondOffspring.contains(bit)){
+                secondOffspring.add(bit);
+            }
+
+
+            //step 4
+            indexBit = getCityIndex(firstParent, bit);
+            bit = secondParent.get(indexBit);
+            if(!firstOffspring.contains(bit)) {
+                firstOffspring.add(bit);
+            }
+
+        } while(!secondOffspring.contains(firstParent.get(0)));//step 5
+
+    }
     private int getCityIndex(ArrayList<Double> tour, double city) {
         for (int i = 0; i < tour.size(); i++) {
             if (tour.get(i) != null && tour.get(i) == city) {
