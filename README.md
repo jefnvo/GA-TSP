@@ -1,18 +1,8 @@
-# WIP
-Trying to implement the CX2 operator proposed in this article:
+Implementing the CX2 operator proposed in this article:
   - Genetic Algorithm for Traveling Salesman Problem with Modified Cycle Crossover Operator
-
-Next Steps:
-
-- The selection criteria in the article is a bit confused :( so to move on I'll implement the *Roulette wheel selection* (**done**)
-- (**DONE**) Apply Pc and choose random parents
-- (**DONE**) Implement CX2 operator 
-- (**done**) Configure data ingestion and structure the data to be able to use
-- (**done**) Create slides 
 
 Extra:
 - This code have a lot of sections that can be optimized, so will be nice improve this sections
-- (**done**) Add maven support 
 
 The CX2 operator have some issues, for some instances the algorithm crashes, example:
 - parent1: 6 3 4 5 0 1 2
