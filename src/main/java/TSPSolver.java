@@ -38,7 +38,7 @@ public class TSPSolver {
                 ArrayList<Long> firstParent = randomPop.get(indexFirstParent);
                 ArrayList<Long> secondParent = randomPop.get(indexSecondParent);
 
-                int randomNumber = rand.nextInt();
+                double randomNumber = Math.random();
                 if (randomNumber <= probCrossover) {
                     ArrayList<ArrayList<Long>> offsprings = cx2Operator(firstParent, secondParent);
                     //replace
@@ -52,7 +52,16 @@ public class TSPSolver {
                         randomPop.set(indexSecondParent, offsprings.get(1));
                         fitnessPopulation.set(indexSecondParent, calcFitnessTour(offsprings.get(1), numCities, distanceWeight));
                     }
+
                 }
+                randomNumber = Math.random();
+                if(randomNumber <= probMutation) {
+                    int index = rouletteWheelSelection(fitnessPopulation, populationSize);
+                    ArrayList<Long> mutated = mutation(index, randomPop);
+                    randomPop.set(index, mutated);
+                    fitnessPopulation.set(index, calcFitnessTour(randomPop.get(index), numCities, distanceWeight));
+                }
+
             }
             bestTour.add(getBestIndex(fitnessPopulation));
             bestFitness.add(Collections.min(fitnessPopulation));
@@ -61,6 +70,16 @@ public class TSPSolver {
         System.out.print("The best fitness is="+Collections.min(bestFitness)+"\n");
 
         return randomPop.get(Collections.max(bestTour));
+    }
+
+    private ArrayList<Long> mutation(int index, ArrayList<ArrayList<Long>> pop) {
+        final int[] swapArray = new Random().ints(0, numCities).distinct().limit(2).toArray();
+
+        Long temp = pop.get(index).get(swapArray[0]);
+        pop.get(index).set(swapArray[0], pop.get(index).get(swapArray[1]));
+        pop.get(index).set(swapArray[1], temp);
+
+        return pop.get(index);
     }
 
     private ArrayList<ArrayList<Long>> cx2Operator(ArrayList<Long> firstParent, ArrayList<Long> secondParent) {
