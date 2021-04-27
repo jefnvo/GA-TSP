@@ -1,8 +1,11 @@
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 
 public class Genetic {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+        TSPReader reader = new TSPReader("../resources/gr21.tsp.txt");
+
         ArrayList<City> arrayCity = new ArrayList<>();
         Random rand = new Random();
 
