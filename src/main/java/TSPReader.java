@@ -13,15 +13,15 @@ class TSPReader {
         this.numCities = numCities;
     }
 
-    public long[][] getDistanceWeight() {
+    public Long[][] getDistanceWeight() {
         return distanceWeight;
     }
 
-    public void setDistanceWeight(long[][] distanceWeight) {
+    public void setDistanceWeight(Long[][] distanceWeight) {
         this.distanceWeight = distanceWeight;
     }
 
-    long[][] distanceWeight;
+    Long[][] distanceWeight;
 
     public TSPReader(String pathname) throws IOException {
         try (Scanner input = new Scanner(new File(pathname))) {
@@ -38,11 +38,11 @@ class TSPReader {
                     break;
                 }
             }
-            distanceWeight = new long[numCities][numCities];
+            distanceWeight = new Long[numCities][numCities];
             // Distance from i to j
             for (int i = 0; i < numCities; i++) {
                 for (int j = 0; j < i+1; j++) {
-                    distanceWeight[i][j] = input.nextInt();
+                    distanceWeight[i][j] = (long) input.nextInt();
                     distanceWeight[j][i] = distanceWeight[i][j];
                 }
             }
