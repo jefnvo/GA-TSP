@@ -1,53 +1,45 @@
 import java.io.File;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 
 class TSPReader {
-    int numCities;
+    ArrayList<String[]> storing;
+    HashMap<String, HashMap<Double, Double>> massa;
 
-    public int getNumCities() {
-        return numCities;
-    }
-
-    public void setNumCities(int numCities) {
-        this.numCities = numCities;
-    }
-
-    public Long[][] getDistanceWeight() {
-        return distanceWeight;
-    }
-
-    public void setDistanceWeight(Long[][] distanceWeight) {
-        this.distanceWeight = distanceWeight;
-    }
-
-    Long[][] distanceWeight;
-
-    public TSPReader(String pathname) throws IOException {
-        try (Scanner input = new Scanner(new File(pathname))) {
-            // The input files follow the TSPLib "explicit" format.
-            String str = new String();
-            String[] pch = new String[2];
-            while (true) {
-                str = input.nextLine();
-                pch = str.split(":");
-                if (pch[0].compareTo("DIMENSION")==0) {
-                    numCities = Integer.parseInt(pch[1].trim());
-                    System.out.println("Number of cities = " + numCities);
-                } else if (pch[0].compareTo("EDGE_WEIGHT_SECTION")==0) {
-                    break;
-                }
-            }
-            distanceWeight = new Long[numCities][numCities];
-            // Distance from i to j
-            for (int i = 0; i < numCities; i++) {
-                for (int j = 0; j < i+1; j++) {
-                    distanceWeight[i][j] = (long) input.nextInt();
-                    distanceWeight[j][i] = distanceWeight[i][j];
+    public TSPReader(String pathname) throws Exception {
+        File file = new File(pathname);
+        Scanner sc = new Scanner(file);
+        storing = new ArrayList<String[]>();
+        String nextValue = null;
+        massa = new HashMap<String, HashMap<Double, Double>>();
+        while (sc.hasNextLine()) {
+            String line = sc.nextLine();
+            if ("DISPLAY_DATA_SECTION".equals(line)) {
+                nextValue = sc.nextLine();
+                while (!nextValue.equals("EOF")) {
+                    storing.add(nextValue.trim().split("  "));
+                    HashMap teste = new HashMap<Double, Double>();
+                    teste.put(Double.valueOf(nextValue.trim().split("  ")[1]), Double.valueOf(nextValue.trim().split("  ")[2]));
+                    massa.put(nextValue.trim().split("  ")[0], teste);
+                    nextValue = sc.nextLine();
                 }
             }
         }
+        sc.close();
     }
 
+    public static HashMap<String, HashMap<Double, Double>> returnScanner(String pathname) throws Exception {
+        TSPReader TSPReader = new TSPReader(pathname);
+        return TSPReader.massa;
+    }
+
+//    public static void main(String[] args) throws Exception {
+//        HashMap<String, HashMap<Double, Double>> storedValues = returnScanner("C:/Users/dvdua/Downloads/Test/Assimetrico/dantzig42.tsp.txt");
+//        for (Map.Entry<String, HashMap<Double, Double>> dado : storedValues.entrySet()) {
+//            System.out.println(dado.getKey());
+//            System.out.println(dado.getValue());
+//        }
+//    }
 }
 
